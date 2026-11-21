@@ -315,6 +315,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
+      width: 100%;
     }
 
     .preview-toolbar {
@@ -328,16 +329,25 @@
       color: var(--text-muted);
     }
 
-    /* RECEIPT / E-NOTA PAPER */
-    .receipt-wrapper {
+    .receipt-scale-container {
       width: 100%;
       max-width: 680px;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* RECEIPT / E-NOTA PAPER (Fixed 680px width so layout is always desktop-authentic & sharp) */
+    .receipt-wrapper {
+      width: 680px;
+      min-width: 680px;
       background: #ffffff;
       padding: 36px 40px 32px 40px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
       border-radius: 4px;
       color: #111111;
       font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transform-origin: top center;
     }
 
     /* Top Header of Receipt */
@@ -521,6 +531,116 @@
       color: #222;
     }
 
+    /* MOBILE STICKY BOTTOM BAR */
+    .mobile-bottom-bar {
+      display: none;
+    }
+
+    /* MOBILE RESPONSIVE OPTIMIZATION */
+    @media (max-width: 768px) {
+      body {
+        padding: 12px 12px 92px 12px;
+      }
+
+      .app-header {
+        padding: 14px 16px;
+        margin-bottom: 14px;
+        border-radius: 12px;
+      }
+
+      .brand-title h1 {
+        font-size: 1.05rem;
+      }
+
+      .brand-title span {
+        font-size: 0.76rem;
+      }
+
+      /* Hide top desktop action buttons on mobile; use sticky bottom bar instead */
+      .app-header .action-buttons {
+        display: none;
+      }
+
+      .editor-panel {
+        padding: 16px 14px;
+        border-radius: 12px;
+        gap: 18px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      /* Prevent iOS Safari auto-zoom on focus (requires >=16px) & bigger touch target */
+      input[type="text"],
+      input[type="number"],
+      input[type="date"],
+      input[type="datetime-local"],
+      textarea,
+      select {
+        font-size: 16px;
+        padding: 10px 12px;
+        min-height: 44px;
+      }
+
+      .item-card {
+        grid-template-columns: 75px 1fr auto;
+        gap: 10px;
+        padding: 12px;
+      }
+
+      .item-card .form-group:nth-child(2) {
+        grid-column: 1 / -1;
+        order: -1;
+      }
+
+      .preset-chip {
+        font-size: 0.8rem;
+        padding: 7px 12px;
+      }
+
+      .sig-tabs {
+        flex-wrap: wrap;
+      }
+
+      .sig-tab {
+        flex: 1 1 45%;
+        padding: 9px 10px;
+        font-size: 0.82rem;
+      }
+
+      .preview-toolbar {
+        font-size: 0.78rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      .mobile-bottom-bar {
+        display: grid;
+        grid-template-columns: auto 1fr 1fr;
+        gap: 8px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid var(--border);
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.07);
+        z-index: 1000;
+      }
+
+      .mobile-bottom-bar .btn {
+        justify-content: center;
+        padding: 12px 10px;
+        font-size: 0.85rem;
+        border-radius: 10px;
+      }
+    }
+
     /* Print Styles */
     @media print {
       body {
@@ -529,16 +649,22 @@
       }
       .app-header,
       .editor-panel,
-      .preview-toolbar {
+      .preview-toolbar,
+      .mobile-bottom-bar {
         display: none !important;
       }
       .main-grid {
         display: block;
       }
+      .receipt-scale-container {
+        height: auto !important;
+        overflow: visible !important;
+      }
       .receipt-wrapper {
         box-shadow: none;
         max-width: 100%;
         padding: 15px 20px;
+        transform: none !important;
       }
     }
   </style>
@@ -699,6 +825,7 @@
         <span>Format: e-Nota Standar</span>
       </div>
 
+      <div class="receipt-scale-container" id="receiptScaleContainer">
       <div class="receipt-wrapper" id="receiptCapture">
         <!-- HEADER -->
         <div class="r-header">
@@ -773,8 +900,16 @@
           </div>
         </div>
       </div>
+      </div>
     </section>
   </main>
+
+  <!-- STICKY BOTTOM ACTION BAR FOR MOBILE -->
+  <div class="mobile-bottom-bar">
+    <button class="btn btn-outline" onclick="resetDefault()" title="Reset">🔄</button>
+    <button class="btn btn-secondary" onclick="downloadPDF()">📄 Unduh PDF</button>
+    <button class="btn btn-primary" onclick="downloadPNG()">🖼️ Simpan Gambar</button>
+  </div>
 
   <script>
     // --- SVG LOGO CYNFEL KOST (Mendukung CynFel.1, CynFel.2, atau CynFel) ---
@@ -921,18 +1056,18 @@
         row.innerHTML = `
           <div class="form-group">
             <label>Qty</label>
-            <input type="number" min="1" value="${item.qty}" oninput="updateItem(${idx}, 'qty', this.value)">
+            <input type="number" inputmode="numeric" min="1" value="${item.qty}" oninput="updateItem(${idx}, 'qty', this.value)">
           </div>
           <div class="form-group">
             <label>Deskripsi Item / Tagihan</label>
             <input type="text" value="${item.desc.replace(/"/g, '&quot;')}" placeholder="Nama tagihan..." oninput="updateItem(${idx}, 'desc', this.value)">
           </div>
           <div class="form-group">
-            <label>Harga Satuan</label>
-            <input type="number" min="0" step="1000" value="${item.price}" oninput="updateItem(${idx}, 'price', this.value)">
+            <label>Harga Satuan (Rp)</label>
+            <input type="number" inputmode="numeric" min="0" step="1000" value="${item.price}" oninput="updateItem(${idx}, 'price', this.value)">
           </div>
           <div>
-            <button type="button" class="btn btn-danger" onclick="removeItem(${idx})" title="Hapus baris" ${items.length === 1 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>✕</button>
+            <button type="button" class="btn btn-danger" style="min-height:42px; padding:0 12px;" onclick="removeItem(${idx})" title="Hapus baris" ${items.length === 1 ? 'disabled style="opacity:0.4;cursor:not-allowed;min-height:42px;padding:0 12px;"' : ''}>✕</button>
           </div>
         `;
         container.appendChild(row);
@@ -1152,19 +1287,50 @@
       } else {
         sigDisplay.innerHTML = '';
       }
+
+      fitReceiptToScreen();
     }
 
-    // --- EXPORT TO PNG & PDF ---
-    async function downloadPNG() {
+    // --- AUTO-FIT RECEIPT PREVIEW ON MOBILE SCREEN ---
+    function fitReceiptToScreen() {
+      const container = document.getElementById('receiptScaleContainer');
+      const receipt = document.getElementById('receiptCapture');
+      if (!container || !receipt) return;
+
+      const availableWidth = container.clientWidth;
+      const baseWidth = 680;
+
+      if (availableWidth < baseWidth) {
+        const scale = availableWidth / baseWidth;
+        receipt.style.transform = `scale(${scale})`;
+        container.style.height = `${Math.ceil(receipt.offsetHeight * scale)}px`;
+      } else {
+        receipt.style.transform = 'none';
+        container.style.height = 'auto';
+      }
+    }
+
+    // --- EXPORT TO PNG & PDF (Full Resolution 680px even on Mobile) ---
+    async function captureReceiptCanvas() {
       const el = document.getElementById('receiptCapture');
-      const branch = document.getElementById('inBranch').value;
-      const branchTag = (branch === '1' || branch === '2') ? `CynfelKost${branch}` : 'CynfelKost';
-      const recipient = (document.getElementById('inRecipient').value || 'Kwitansi').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const prevTransform = el.style.transform;
+      el.style.transform = 'none';
       const canvas = await html2canvas(el, {
         scale: 2,
+        width: 680,
+        windowWidth: 1024,
         backgroundColor: '#ffffff',
         useCORS: true
       });
+      el.style.transform = prevTransform;
+      return canvas;
+    }
+
+    async function downloadPNG() {
+      const branch = document.getElementById('inBranch').value;
+      const branchTag = (branch === '1' || branch === '2') ? `CynfelKost${branch}` : 'CynfelKost';
+      const recipient = (document.getElementById('inRecipient').value || 'Kwitansi').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const canvas = await captureReceiptCanvas();
       const link = document.createElement('a');
       link.download = `Kwitansi_${branchTag}_${recipient}.png`;
       link.href = canvas.toDataURL('image/png');
@@ -1172,15 +1338,10 @@
     }
 
     async function downloadPDF() {
-      const el = document.getElementById('receiptCapture');
       const branch = document.getElementById('inBranch').value;
       const branchTag = (branch === '1' || branch === '2') ? `CynfelKost${branch}` : 'CynfelKost';
       const recipient = (document.getElementById('inRecipient').value || 'Kwitansi').replace(/[^a-zA-Z0-9_-]/g, '_');
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true
-      });
+      const canvas = await captureReceiptCanvas();
       const imgData = canvas.toDataURL('image/png');
       const { jsPDF } = window.jspdf;
 
@@ -1228,6 +1389,8 @@
       renderItemsEditor();
       renderReceipt();
     });
+
+    window.addEventListener('resize', fitReceiptToScreen);
   </script>
 </body>
 </html>
