@@ -332,8 +332,7 @@
     .receipt-scale-container {
       width: 100%;
       max-width: 680px;
-      display: flex;
-      justify-content: center;
+      position: relative;
       overflow: hidden;
     }
 
@@ -347,7 +346,7 @@
       border-radius: 4px;
       color: #111111;
       font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      transform-origin: top center;
+      transform-origin: top left;
     }
 
     /* Top Header of Receipt */
@@ -584,20 +583,22 @@
       overflow: auto;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       background: #1e293b;
       border-radius: 10px;
-      padding: 12px;
+      padding: 10px;
       -webkit-overflow-scrolling: touch;
     }
 
     .zoom-modal-body img {
-      width: 680px;
-      max-width: none;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
       height: auto;
+      object-fit: contain;
       border-radius: 4px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      margin: 0 auto;
+      display: block;
     }
 
     .zoom-modal-footer {
@@ -781,7 +782,11 @@
       }
 
       textarea {
-        min-height: 48px;
+        min-height: 115px;
+      }
+
+      #inCompanyAddress {
+        min-height: 125px;
       }
 
       .items-list {
@@ -834,6 +839,13 @@
 
       .preview-panel.m-active {
         display: flex;
+      }
+
+      .receipt-scale-container {
+        margin: 0 auto;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        border-radius: 4px;
+        background: #fff;
       }
 
       .preview-toolbar {
@@ -1611,7 +1623,7 @@
       document.getElementById('zoomModalOverlay').classList.remove('open');
     }
 
-    // --- AUTO-FIT RECEIPT PREVIEW ON MOBILE SCREEN (BOTH WIDTH & HEIGHT SO NO SCROLL) ---
+    // --- AUTO-FIT RECEIPT PREVIEW ON MOBILE SCREEN (BOTH WIDTH & HEIGHT SO NO SCROLL & NO CLIPPING) ---
     function fitReceiptToScreen() {
       const container = document.getElementById('receiptScaleContainer');
       const receipt = document.getElementById('receiptCapture');
@@ -1622,48 +1634,61 @@
       if (!isMobile) {
         document.getElementById('editorPanel').style.display = 'flex';
         receipt.style.transform = 'none';
+        container.style.width = '100%';
         container.style.height = 'auto';
         return;
       }
 
-      const availableWidth = (previewPanel ? previewPanel.clientWidth - 24 : window.innerWidth - 24);
-      const availableHeight = (previewPanel ? previewPanel.clientHeight - 54 : window.innerHeight - 220);
+      // If previewPanel is currently hidden, no need to measure yet
+      if (window.getComputedStyle(previewPanel).display === 'none') return;
+
+      receipt.style.transform = 'none';
       const baseWidth = 680;
       const baseHeight = receipt.offsetHeight || 460;
 
+      const availableWidth = Math.max(200, previewPanel.clientWidth - 24);
+      const availableHeight = Math.max(180, previewPanel.clientHeight - 56);
+
       const scaleW = availableWidth / baseWidth;
-      const scaleH = availableHeight > 120 ? (availableHeight / baseHeight) : scaleW;
+      const scaleH = availableHeight / baseHeight;
       const scale = Math.min(scaleW, scaleH, 1);
 
+      const scaledW = Math.ceil(baseWidth * scale);
+      const scaledH = Math.ceil(baseHeight * scale);
+
+      receipt.style.transformOrigin = 'top left';
       receipt.style.transform = `scale(${scale})`;
-      container.style.height = `${Math.ceil(baseHeight * scale)}px`;
+      container.style.width = `${scaledW}px`;
+      container.style.height = `${scaledH}px`;
     }
 
-    // --- EXPORT TO PNG & PDF (Full Resolution 680px even on Mobile) ---
+    // --- EXPORT TO PNG & PDF (Full Resolution 680px even on Mobile without clipping) ---
     async function captureReceiptCanvas() {
-      const el = document.getElementById('receiptCapture');
-      const previewPanel = document.getElementById('previewPanel');
-      const wasHidden = window.getComputedStyle(previewPanel).display === 'none';
-      if (wasHidden) {
-        previewPanel.style.display = 'flex';
-        previewPanel.style.position = 'fixed';
-        previewPanel.style.left = '-9999px';
-      }
-      const prevTransform = el.style.transform;
-      el.style.transform = 'none';
-      const canvas = await html2canvas(el, {
+      const source = document.getElementById('receiptCapture');
+      // Clone offscreen at exact 680px desktop width so html2canvas never clips on mobile viewports
+      const clone = source.cloneNode(true);
+      clone.style.transform = 'none';
+      clone.style.width = '680px';
+      clone.style.minWidth = '680px';
+      clone.style.maxWidth = '680px';
+      clone.style.position = 'fixed';
+      clone.style.top = '0';
+      clone.style.left = '-9999px';
+      clone.style.zIndex = '-1';
+      document.body.appendChild(clone);
+
+      const canvas = await html2canvas(clone, {
         scale: 2,
         width: 680,
-        windowWidth: 1024,
+        height: clone.offsetHeight,
+        windowWidth: 1200,
+        scrollX: 0,
+        scrollY: 0,
         backgroundColor: '#ffffff',
         useCORS: true
       });
-      el.style.transform = prevTransform;
-      if (wasHidden) {
-        previewPanel.style.display = '';
-        previewPanel.style.position = '';
-        previewPanel.style.left = '';
-      }
+
+      document.body.removeChild(clone);
       return canvas;
     }
 
