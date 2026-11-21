@@ -614,14 +614,10 @@
         </div>
         <div class="form-grid">
           <div class="form-group">
-            <label>Pilih Tanggal Kwitansi (Kalender)</label>
-            <input type="date" id="inDatePicker" onchange="handleDatePickerChange()">
+            <label>Tanggal Kwitansi (Date)</label>
+            <input type="date" id="inDatePicker" onchange="renderReceipt()">
           </div>
           <div class="form-group">
-            <label>Tampilan Tanggal (Date)</label>
-            <input type="text" id="inDate" value="" oninput="renderReceipt()" placeholder="Contoh: 08 August 2025">
-          </div>
-          <div class="form-group full">
             <label>Kepada / Nama Penyewa (To)</label>
             <input type="text" id="inRecipient" value="Fidel (Kamar 01)" oninput="renderReceipt()" placeholder="Nama penghuni / No. Kamar">
           </div>
@@ -669,7 +665,7 @@
         </div>
       </div>
 
-      <!-- 5. Footer, Tanda Tangan & Timestamp -->
+      <!-- 5. Footer & Tanda Tangan -->
       <div class="section-box">
         <div class="section-title">
           <span>5. Tanda Tangan & Catatan Kaki</span>
@@ -678,17 +674,6 @@
           <div class="form-group full">
             <label>Teks Tengah (Tag e-Nota)</label>
             <input type="text" id="inEnotaTag" value="[ Printed by e-Nota ]" oninput="renderReceipt()">
-          </div>
-          <div class="form-group">
-            <label>Pilih Waktu Cetak (Kalender & Jam)</label>
-            <div style="display:flex; gap:4px;">
-              <input type="datetime-local" id="inTimestampPicker" step="1" onchange="handleTimestampPickerChange()">
-              <button type="button" class="btn btn-outline" style="padding:6px 8px;" title="Set ke waktu sekarang" onclick="setNowTimestamp()">🔄</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Tampilan Waktu Cetak (Timestamp)</label>
-            <input type="text" id="inTimestamp" value="" oninput="renderReceipt()" placeholder="DD/MM/YYYY HH:mm:ss">
           </div>
           <div class="form-group">
             <label>Nama Penerima (Kiri - Opsional)</label>
@@ -798,7 +783,6 @@
 
           <div class="r-center-thanks">
             <div>*** Thank You ***</div>
-            <div id="rTimestamp"></div>
           </div>
 
           <div class="r-sig-col">
@@ -938,56 +922,11 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    // Format untuk input[type="datetime-local"] -> YYYY-MM-DDTHH:mm:ss
-    function toDateTimeLocalValue(dateObj) {
-      const yyyy = dateObj.getFullYear();
-      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const dd = String(dateObj.getDate()).padStart(2, '0');
-      const hh = String(dateObj.getHours()).padStart(2, '0');
-      const min = String(dateObj.getMinutes()).padStart(2, '0');
-      const ss = String(dateObj.getSeconds()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
-    }
-
-    // Format timestamp di kwitansi (contoh: 08/08/2025 11:29:34)
-    function formatTimestampDisplay(dateObj) {
-      const dd = String(dateObj.getDate()).padStart(2, '0');
-      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const yyyy = dateObj.getFullYear();
-      const hh = String(dateObj.getHours()).padStart(2, '0');
-      const min = String(dateObj.getMinutes()).padStart(2, '0');
-      const ss = String(dateObj.getSeconds()).padStart(2, '0');
-      return `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
-    }
-
-    function getNowTimestampFormatted() {
-      return formatTimestampDisplay(new Date());
-    }
-
-    function handleDatePickerChange() {
+    function getFormattedDateFromPicker() {
       const val = document.getElementById('inDatePicker').value;
-      if (!val) return;
+      if (!val) return formatDateLong(new Date());
       const [yyyy, mm, dd] = val.split('-').map(Number);
-      const d = new Date(yyyy, mm - 1, dd);
-      document.getElementById('inDate').value = formatDateLong(d);
-      renderReceipt();
-    }
-
-    function handleTimestampPickerChange() {
-      const val = document.getElementById('inTimestampPicker').value;
-      if (!val) return;
-      const d = new Date(val);
-      if (!isNaN(d.getTime())) {
-        document.getElementById('inTimestamp').value = formatTimestampDisplay(d);
-        renderReceipt();
-      }
-    }
-
-    function setNowTimestamp() {
-      const now = new Date();
-      document.getElementById('inTimestampPicker').value = toDateTimeLocalValue(now);
-      document.getElementById('inTimestamp').value = formatTimestampDisplay(now);
-      renderReceipt();
+      return formatDateLong(new Date(yyyy, mm - 1, dd));
     }
 
     // --- ITEMS MANAGEMENT ---
@@ -1197,7 +1136,7 @@
       document.getElementById('rCompanyName').textContent = document.getElementById('inCompanyName').value;
       document.getElementById('rCompanyAddress').textContent = document.getElementById('inCompanyAddress').value;
       document.getElementById('rCompanyPhone').textContent = document.getElementById('inCompanyPhone').value;
-      document.getElementById('rDate').textContent = document.getElementById('inDate').value;
+      document.getElementById('rDate').textContent = getFormattedDateFromPicker();
       document.getElementById('rRecipient').textContent = document.getElementById('inRecipient').value;
 
       // 3. Items Table
@@ -1233,7 +1172,6 @@
 
       // 5. Footer & Signature
       document.getElementById('rEnotaTag').textContent = document.getElementById('inEnotaTag').value;
-      document.getElementById('rTimestamp').textContent = document.getElementById('inTimestamp').value;
       document.getElementById('rReceivedByName').textContent = document.getElementById('inReceivedBy').value;
       document.getElementById('rRegardsName').textContent = document.getElementById('inRegardsName').value;
 
@@ -1305,14 +1243,12 @@
       document.getElementById('customLogoUploadGroup').style.display = 'none';
       const now = new Date();
       document.getElementById('inDatePicker').value = toDateInputValue(now);
-      document.getElementById('inDate').value = formatDateLong(now);
       document.getElementById('inRecipient').value = 'Fidel (Kamar 01)';
       document.getElementById('inPayment').value = 1500000;
       document.getElementById('inEnotaTag').value = '[ Printed by e-Nota ]';
       document.getElementById('inReceivedBy').value = '';
       document.getElementById('inRegardsName').value = '';
       document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG('red', '2');
-      setNowTimestamp();
       items = [{ qty: 1, desc: 'Sewa Kamar Kost Agustus', price: 1500000 }];
       switchSigMode('default');
       renderItemsEditor();
@@ -1325,9 +1261,6 @@
       const now = new Date();
       document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG('red', initBranch);
       document.getElementById('inDatePicker').value = toDateInputValue(now);
-      document.getElementById('inDate').value = formatDateLong(now);
-      document.getElementById('inTimestampPicker').value = toDateTimeLocalValue(now);
-      document.getElementById('inTimestamp').value = formatTimestampDisplay(now);
       initSignatureCanvas();
       renderItemsEditor();
       renderReceipt();
