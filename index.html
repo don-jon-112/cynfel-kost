@@ -973,9 +973,9 @@
           <div class="form-group">
             <label>Pilih Cabang / Unit Kost</label>
             <select id="inBranch" onchange="handleBranchChange()">
+              <option value="general" selected>Cynfel Kost (Logo CynFel)</option>
               <option value="1">Cynfel Kost 1 (Logo CynFel.1)</option>
-              <option value="2" selected>Cynfel Kost 2 (Logo CynFel.2)</option>
-              <option value="general">Cynfel Kost (Logo CynFel)</option>
+              <option value="2">Cynfel Kost 2 (Logo CynFel.2)</option>
             </select>
           </div>
           <div class="form-group">
@@ -1000,7 +1000,7 @@
           </div>
           <div class="form-group full">
             <label>Alamat Lengkap</label>
-            <textarea id="inCompanyAddress" oninput="renderReceipt()">Jl. Gembira Terusan No. 52, RT 6/RW 7, Kel. Sungai Bambu, Kec. Tanjung Priok, Jakarta Utara 14330</textarea>
+            <textarea id="inCompanyAddress" oninput="renderReceipt()">Gg. Mawar No. 12 A, RT.10/RW.3, Papanggo, Tanjung Priok, Jakarta Utara</textarea>
           </div>
         </div>
       </div>
@@ -1200,13 +1200,15 @@
   </div>
 
   <script>
-    // --- SVG LOGO CYNFEL KOST (Mendukung CynFel.1, CynFel.2, atau CynFel) ---
-    function getCynfelLogoSVG(mode = 'red', branch = '2') {
+    // --- SVG LOGO CYNFEL KOST (Mendukung CynFel, CynFel.1, atau CynFel.2) ---
+    let svgGradUid = 0;
+    function getCynfelLogoSVG(mode = 'red', branch = 'general') {
       const logoLabel = (branch === '1' || branch === '2') ? `CynFel.${branch}` : 'CynFel';
+      const gradId = `redGrad_${++svgGradUid}`;
 
       if (mode === 'bw') {
         return `
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <svg width="96" height="96" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
           <circle cx="100" cy="100" r="95" fill="#ffffff" stroke="#111111" stroke-width="5"/>
           <circle cx="100" cy="100" r="85" fill="none" stroke="#111111" stroke-width="3.5"/>
           <!-- Back Tree -->
@@ -1230,7 +1232,7 @@
           <rect x="141" y="90" width="12" height="9" rx="1.5" fill="none" stroke="#111111" stroke-width="2.2"/>
           <!-- Curved Horizon Line -->
           <path d="M40 120 Q100 94 160 120" fill="none" stroke="#111111" stroke-width="3.8" stroke-linecap="round"/>
-          <!-- Text CynFel.1 / CynFel.2 -->
+          <!-- Text CynFel / CynFel.1 / CynFel.2 -->
           <text x="100" y="143" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="25" fill="#111111" letter-spacing="-0.5">${logoLabel}</text>
           <!-- Underline & KOST -->
           <line x1="78" y1="156" x2="112" y2="156" stroke="#111111" stroke-width="3.5" stroke-linecap="round"/>
@@ -1240,15 +1242,15 @@
 
       // Default Red version matching the photo
       return `
-      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <svg width="96" height="96" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <radialGradient id="redGrad" cx="35%" cy="30%" r="70%">
+          <radialGradient id="${gradId}" cx="35%" cy="30%" r="70%">
             <stop offset="0%" stop-color="#f43f33"/>
             <stop offset="100%" stop-color="#d92318"/>
           </radialGradient>
         </defs>
         <!-- Outer Red Disc -->
-        <circle cx="100" cy="100" r="96" fill="url(#redGrad)" stroke="#b91c1c" stroke-width="2"/>
+        <circle cx="100" cy="100" r="96" fill="url(#${gradId})" stroke="#b91c1c" stroke-width="2"/>
         <!-- Inner Black Ring -->
         <circle cx="100" cy="100" r="85" fill="none" stroke="#1a1211" stroke-width="4.2"/>
         <!-- Back Dark Tree -->
@@ -1272,12 +1274,18 @@
         <rect x="141" y="90" width="12" height="9" rx="1.5" fill="none" stroke="#b8aea8" stroke-width="2.2"/>
         <!-- Curved Horizon Hill Line -->
         <path d="M40 120 Q100 94 160 120" fill="none" stroke="#cdbdb6" stroke-width="3.8" stroke-linecap="round"/>
-        <!-- CynFel.1 / CynFel.2 Text -->
+        <!-- CynFel / CynFel.1 / CynFel.2 Text -->
         <text x="100" y="143" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="25.5" fill="#181212" letter-spacing="-0.5">${logoLabel}</text>
         <!-- Underline & KOST -->
         <line x1="78" y1="156" x2="112" y2="156" stroke="#181212" stroke-width="3.5" stroke-linecap="round"/>
         <text x="135" y="159" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="11.5" fill="#181212" letter-spacing="0.5">KOST</text>
       </svg>`;
+    }
+
+    // Helper: Convert SVG string to Data URL so html2canvas & mobile preview always render the updated logo reliably
+    function getCynfelLogoDataUrl(mode = 'red', branch = 'general') {
+      const svgString = getCynfelLogoSVG(mode, branch).trim();
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
     }
 
     // Default signature SVG (mirip contoh kwitansi)
@@ -1398,21 +1406,42 @@
     }
 
     // --- LOGO & BRANCH HANDLING ---
+    const BRANCH_ADDRESSES = {
+      '1': 'Gg. Mawar No. 12 A, RT.10/RW.3, Papanggo, Tanjung Priok, Jakarta Utara',
+      '2': 'Jl. Papanggo IIE No. 38B, RT.01/RW.6, Papanggo, Tanjung Priok, Jakarta Utara',
+      'general': 'Gg. Mawar No. 12 A, RT.10/RW.3, Papanggo, Tanjung Priok, Jakarta Utara'
+    };
+
     function handleBranchChange() {
       const branch = document.getElementById('inBranch').value;
+      const style = document.getElementById('inLogoStyle').value;
       const currentName = document.getElementById('inCompanyName').value.trim();
-      // Jika nama usaha sedang menggunakan salah satu nama standar, sesuaikan atau biarkan "Cynfel Kost"
-      if (currentName === 'Cynfel Kost 1' || currentName === 'Cynfel Kost 2') {
+      // Jika nama usaha sedang menggunakan salah satu nama standar, sesuaikan otomatis
+      if (currentName === 'Cynfel Kost' || currentName === 'Cynfel Kost 1' || currentName === 'Cynfel Kost 2') {
         document.getElementById('inCompanyName').value = branch === 'general' ? 'Cynfel Kost' : `Cynfel Kost ${branch}`;
       }
-      document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG('red', branch);
+      // Update alamat otomatis sesuai cabang (Cynfel 1 atau Cynfel 2)
+      if (BRANCH_ADDRESSES[branch]) {
+        document.getElementById('inCompanyAddress').value = BRANCH_ADDRESSES[branch];
+      }
+      // Jika sebelumnya user sedang memilih 'custom' tapi belum upload file, kembalikan ke 'red'
+      if (style === 'custom' && !customLogoDataUrl) {
+        document.getElementById('inLogoStyle').value = 'red';
+        document.getElementById('customLogoUploadGroup').style.display = 'none';
+      }
+      const activeMode = document.getElementById('inLogoStyle').value === 'bw' ? 'bw' : 'red';
+      document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG(activeMode, branch);
       renderReceipt();
     }
 
     function handleLogoStyleChange() {
       const style = document.getElementById('inLogoStyle').value;
+      const branch = document.getElementById('inBranch').value;
       const uploadGroup = document.getElementById('customLogoUploadGroup');
       uploadGroup.style.display = style === 'custom' ? 'flex' : 'none';
+      if (style !== 'custom') {
+        document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG(style, branch);
+      }
       renderReceipt();
     }
 
@@ -1422,6 +1451,8 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         customLogoDataUrl = e.target.result;
+        document.getElementById('inLogoStyle').value = 'custom';
+        document.getElementById('headerMiniLogo').innerHTML = `<img src="${customLogoDataUrl}" style="width:100%;height:100%;object-fit:contain;" alt="Logo" />`;
         renderReceipt();
       };
       reader.readAsDataURL(file);
@@ -1509,16 +1540,16 @@
 
     // --- RENDER RECEIPT PREVIEW ---
     function renderReceipt() {
-      // 1. Logo
+      // 1. Logo (Rendered as <img> Data URL so html2canvas & mobile preview always update cleanly)
       const logoStyle = document.getElementById('inLogoStyle').value;
       const branch = document.getElementById('inBranch').value;
       const logoContainer = document.getElementById('rLogoContainer');
       if (logoStyle === 'custom' && customLogoDataUrl) {
         logoContainer.innerHTML = `<img src="${customLogoDataUrl}" alt="Logo" />`;
       } else if (logoStyle === 'bw') {
-        logoContainer.innerHTML = getCynfelLogoSVG('bw', branch);
+        logoContainer.innerHTML = `<img src="${getCynfelLogoDataUrl('bw', branch)}" alt="Logo Cynfel Kost" />`;
       } else {
-        logoContainer.innerHTML = getCynfelLogoSVG('red', branch);
+        logoContainer.innerHTML = `<img src="${getCynfelLogoDataUrl('red', branch)}" alt="Logo Cynfel Kost" />`;
       }
 
       // 2. Company & Recipient Info
@@ -1601,6 +1632,7 @@
       if (tab === 'preview') {
         editorPanel.style.display = 'none';
         previewPanel.classList.add('m-active');
+        renderReceipt();
         requestAnimationFrame(fitReceiptToScreen);
       } else {
         editorPanel.style.display = 'flex';
@@ -1612,6 +1644,7 @@
     }
 
     async function openZoomModal() {
+      renderReceipt();
       const overlay = document.getElementById('zoomModalOverlay');
       const img = document.getElementById('zoomModalImg');
       const canvas = await captureReceiptCanvas();
@@ -1726,10 +1759,10 @@
     }
 
     function resetDefault() {
-      document.getElementById('inBranch').value = '2';
+      document.getElementById('inBranch').value = 'general';
       document.getElementById('inCompanyName').value = 'Cynfel Kost';
       document.getElementById('inCompanyPhone').value = '087886000492';
-      document.getElementById('inCompanyAddress').value = 'Jl. Gembira Terusan No. 52, RT 6/RW 7, Kel. Sungai Bambu, Kec. Tanjung Priok, Jakarta Utara 14330';
+      document.getElementById('inCompanyAddress').value = BRANCH_ADDRESSES['general'];
       document.getElementById('inLogoStyle').value = 'red';
       document.getElementById('customLogoUploadGroup').style.display = 'none';
       const now = new Date();
@@ -1738,7 +1771,7 @@
       document.getElementById('inEnotaTag').value = '[ Printed by e-Nota ]';
       document.getElementById('inReceivedBy').value = '';
       document.getElementById('inRegardsName').value = '';
-      document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG('red', '2');
+      document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG('red', 'general');
       items = [{ qty: 1, desc: 'Sewa Kamar Kost Agustus', price: 1500000 }];
       switchSigMode('default');
       renderItemsEditor();
