@@ -57,6 +57,23 @@
       gap: 12px;
     }
 
+    #headerMiniLogo {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #headerMiniLogo svg,
+    #headerMiniLogo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
     .brand-title h1 {
       font-size: 1.25rem;
       font-weight: 700;
@@ -642,8 +659,8 @@
       }
 
       #headerMiniLogo {
-        width: 30px !important;
-        height: 30px !important;
+        width: 34px !important;
+        height: 34px !important;
       }
 
       .brand-title h1 {
@@ -971,11 +988,18 @@
         </div>
         <div class="form-grid">
           <div class="form-group">
-            <label>Pilih Cabang / Unit Kost</label>
+            <label>Unit Kost</label>
             <select id="inBranch" onchange="handleBranchChange()">
-              <option value="general" selected>Cynfel Kost (Logo CynFel)</option>
-              <option value="1">Cynfel Kost 1 (Logo CynFel.1)</option>
-              <option value="2">Cynfel Kost 2 (Logo CynFel.2)</option>
+              <option value="1" selected>Cynfel Kost 1</option>
+              <option value="2">Cynfel Kost 2</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pilihan Logo</label>
+            <select id="inLogoNumber" onchange="handleLogoNumberChange()">
+              <option value="general" selected>Tanpa Nomor (CynFel)</option>
+              <option value="1">Cynfel Kost 1 (CynFel.1)</option>
+              <option value="2">Cynfel Kost 2 (CynFel.2)</option>
             </select>
           </div>
           <div class="form-group">
@@ -986,8 +1010,8 @@
             <label>No. Telepon / WhatsApp</label>
             <input type="text" id="inCompanyPhone" value="087886000492" oninput="renderReceipt()">
           </div>
-          <div class="form-group">
-            <label>Gaya Logo Cynfel Kost</label>
+          <div class="form-group full">
+            <label>Warna / File Logo</label>
             <select id="inLogoStyle" onchange="handleLogoStyleChange()">
               <option value="red">Logo Bulat Merah (Sesuai Foto)</option>
               <option value="bw">Logo Hitam-Putih (Hemat Tinta)</option>
@@ -1408,40 +1432,44 @@
     // --- LOGO & BRANCH HANDLING ---
     const BRANCH_ADDRESSES = {
       '1': 'Gg. Mawar No. 12 A, RT.10/RW.3, Papanggo, Tanjung Priok, Jakarta Utara',
-      '2': 'Jl. Papanggo IIE No. 38B, RT.01/RW.6, Papanggo, Tanjung Priok, Jakarta Utara',
-      'general': 'Gg. Mawar No. 12 A, RT.10/RW.3, Papanggo, Tanjung Priok, Jakarta Utara'
+      '2': 'Jl. Papanggo IIE No. 38B, RT.01/RW.6, Papanggo, Tanjung Priok, Jakarta Utara'
     };
+
+    function updateHeaderMiniLogo() {
+      const style = document.getElementById('inLogoStyle').value;
+      const logoNum = document.getElementById('inLogoNumber').value;
+      if (style === 'custom' && customLogoDataUrl) {
+        document.getElementById('headerMiniLogo').innerHTML = `<img src="${customLogoDataUrl}" alt="Logo" />`;
+      } else {
+        const activeMode = style === 'bw' ? 'bw' : 'red';
+        document.getElementById('headerMiniLogo').innerHTML = `<img src="${getCynfelLogoDataUrl(activeMode, logoNum)}" alt="Logo Cynfel Kost" />`;
+      }
+    }
 
     function handleBranchChange() {
       const branch = document.getElementById('inBranch').value;
-      const style = document.getElementById('inLogoStyle').value;
-      const currentName = document.getElementById('inCompanyName').value.trim();
-      // Jika nama usaha sedang menggunakan salah satu nama standar, sesuaikan otomatis
-      if (currentName === 'Cynfel Kost' || currentName === 'Cynfel Kost 1' || currentName === 'Cynfel Kost 2') {
-        document.getElementById('inCompanyName').value = branch === 'general' ? 'Cynfel Kost' : `Cynfel Kost ${branch}`;
-      }
-      // Update alamat otomatis sesuai cabang (Cynfel 1 atau Cynfel 2)
+      // Update alamat lengkap otomatis sesuai Unit Kost (1 atau 2)
       if (BRANCH_ADDRESSES[branch]) {
         document.getElementById('inCompanyAddress').value = BRANCH_ADDRESSES[branch];
       }
-      // Jika sebelumnya user sedang memilih 'custom' tapi belum upload file, kembalikan ke 'red'
+      renderReceipt();
+    }
+
+    function handleLogoNumberChange() {
+      const style = document.getElementById('inLogoStyle').value;
       if (style === 'custom' && !customLogoDataUrl) {
         document.getElementById('inLogoStyle').value = 'red';
         document.getElementById('customLogoUploadGroup').style.display = 'none';
       }
-      const activeMode = document.getElementById('inLogoStyle').value === 'bw' ? 'bw' : 'red';
-      document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG(activeMode, branch);
+      updateHeaderMiniLogo();
       renderReceipt();
     }
 
     function handleLogoStyleChange() {
       const style = document.getElementById('inLogoStyle').value;
-      const branch = document.getElementById('inBranch').value;
       const uploadGroup = document.getElementById('customLogoUploadGroup');
       uploadGroup.style.display = style === 'custom' ? 'flex' : 'none';
-      if (style !== 'custom') {
-        document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG(style, branch);
-      }
+      updateHeaderMiniLogo();
       renderReceipt();
     }
 
@@ -1452,7 +1480,7 @@
       reader.onload = function(e) {
         customLogoDataUrl = e.target.result;
         document.getElementById('inLogoStyle').value = 'custom';
-        document.getElementById('headerMiniLogo').innerHTML = `<img src="${customLogoDataUrl}" style="width:100%;height:100%;object-fit:contain;" alt="Logo" />`;
+        updateHeaderMiniLogo();
         renderReceipt();
       };
       reader.readAsDataURL(file);
@@ -1542,14 +1570,14 @@
     function renderReceipt() {
       // 1. Logo (Rendered as <img> Data URL so html2canvas & mobile preview always update cleanly)
       const logoStyle = document.getElementById('inLogoStyle').value;
-      const branch = document.getElementById('inBranch').value;
+      const logoNum = document.getElementById('inLogoNumber').value;
       const logoContainer = document.getElementById('rLogoContainer');
       if (logoStyle === 'custom' && customLogoDataUrl) {
         logoContainer.innerHTML = `<img src="${customLogoDataUrl}" alt="Logo" />`;
       } else if (logoStyle === 'bw') {
-        logoContainer.innerHTML = `<img src="${getCynfelLogoDataUrl('bw', branch)}" alt="Logo Cynfel Kost" />`;
+        logoContainer.innerHTML = `<img src="${getCynfelLogoDataUrl('bw', logoNum)}" alt="Logo Cynfel Kost" />`;
       } else {
-        logoContainer.innerHTML = `<img src="${getCynfelLogoDataUrl('red', branch)}" alt="Logo Cynfel Kost" />`;
+        logoContainer.innerHTML = `<img src="${getCynfelLogoDataUrl('red', logoNum)}" alt="Logo Cynfel Kost" />`;
       }
 
       // 2. Company & Recipient Info
@@ -1759,10 +1787,11 @@
     }
 
     function resetDefault() {
-      document.getElementById('inBranch').value = 'general';
+      document.getElementById('inBranch').value = '1';
+      document.getElementById('inLogoNumber').value = 'general';
       document.getElementById('inCompanyName').value = 'Cynfel Kost';
       document.getElementById('inCompanyPhone').value = '087886000492';
-      document.getElementById('inCompanyAddress').value = BRANCH_ADDRESSES['general'];
+      document.getElementById('inCompanyAddress').value = BRANCH_ADDRESSES['1'];
       document.getElementById('inLogoStyle').value = 'red';
       document.getElementById('customLogoUploadGroup').style.display = 'none';
       const now = new Date();
@@ -1771,7 +1800,7 @@
       document.getElementById('inEnotaTag').value = '[ Printed by e-Nota ]';
       document.getElementById('inReceivedBy').value = '';
       document.getElementById('inRegardsName').value = '';
-      document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG('red', 'general');
+      updateHeaderMiniLogo();
       items = [{ qty: 1, desc: 'Sewa Kamar Kost Agustus', price: 1500000 }];
       switchSigMode('default');
       renderItemsEditor();
@@ -1780,9 +1809,8 @@
 
     // --- INIT ---
     window.addEventListener('DOMContentLoaded', () => {
-      const initBranch = document.getElementById('inBranch').value;
       const now = new Date();
-      document.getElementById('headerMiniLogo').innerHTML = getCynfelLogoSVG('red', initBranch);
+      updateHeaderMiniLogo();
       document.getElementById('inDatePicker').value = toDateInputValue(now);
       initSignatureCanvas();
       renderItemsEditor();
