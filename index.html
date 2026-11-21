@@ -646,29 +646,10 @@
         </div>
       </div>
 
-      <!-- 4. Pembayaran & Status -->
+      <!-- 4. Footer & Tanda Tangan -->
       <div class="section-box">
         <div class="section-title">
-          <span>4. Pembayaran (Payment)</span>
-        </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Jumlah Dibayar (PAYMENT)</label>
-            <input type="number" id="inPayment" value="1500000" min="0" step="1000" oninput="renderReceipt()">
-          </div>
-          <div class="form-group" style="justify-content: flex-end;">
-            <div style="display:flex; gap:6px;">
-              <button type="button" class="btn btn-outline" style="flex:1; padding:8px; font-size:0.78rem;" onclick="setPaymentFull()">Samakan dgn Total</button>
-              <button type="button" class="btn btn-outline" style="flex:1; padding:8px; font-size:0.78rem;" onclick="setPaymentZero()">Set 0</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 5. Footer & Tanda Tangan -->
-      <div class="section-box">
-        <div class="section-title">
-          <span>5. Tanda Tangan & Catatan Kaki</span>
+          <span>4. Tanda Tangan & Catatan Kaki</span>
         </div>
         <div class="form-grid">
           <div class="form-group full">
@@ -993,21 +974,6 @@
       renderReceipt();
     }
 
-    // --- PAYMENT HELPERS ---
-    function getCalculatedTotal() {
-      return items.reduce((acc, it) => acc + (Number(it.qty) || 0) * (Number(it.price) || 0), 0);
-    }
-
-    function setPaymentFull() {
-      document.getElementById('inPayment').value = getCalculatedTotal();
-      renderReceipt();
-    }
-
-    function setPaymentZero() {
-      document.getElementById('inPayment').value = 0;
-      renderReceipt();
-    }
-
     // --- LOGO & BRANCH HANDLING ---
     function handleBranchChange() {
       const branch = document.getElementById('inBranch').value;
@@ -1163,12 +1129,10 @@
         tbody.appendChild(tr);
       });
 
-      // 4. Summary
-      const payment = Number(document.getElementById('inPayment').value) || 0;
-
+      // 4. Summary (Otomatis terkalkulasi dari total harga item)
       document.getElementById('rTotalQty').textContent = totalQty;
       document.getElementById('rTotalAmount').textContent = formatNumber(totalAmount);
-      document.getElementById('rPaymentAmount').textContent = formatNumber(payment);
+      document.getElementById('rPaymentAmount').textContent = formatNumber(totalAmount);
 
       // 5. Footer & Signature
       document.getElementById('rEnotaTag').textContent = document.getElementById('inEnotaTag').value;
@@ -1244,7 +1208,6 @@
       const now = new Date();
       document.getElementById('inDatePicker').value = toDateInputValue(now);
       document.getElementById('inRecipient').value = 'Fidel (Kamar 01)';
-      document.getElementById('inPayment').value = 1500000;
       document.getElementById('inEnotaTag').value = '[ Printed by e-Nota ]';
       document.getElementById('inReceivedBy').value = '';
       document.getElementById('inRegardsName').value = '';
