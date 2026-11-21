@@ -531,63 +531,270 @@
       color: #222;
     }
 
-    /* MOBILE STICKY BOTTOM BAR */
-    .mobile-bottom-bar {
+    /* MOBILE STICKY BOTTOM BAR & STEP TABS */
+    .mobile-bottom-bar,
+    .mobile-step-tabs,
+    .mobile-preview-bar,
+    .zoom-modal-overlay {
       display: none;
     }
 
-    /* MOBILE RESPONSIVE OPTIMIZATION */
+    .receipt-scale-container {
+      cursor: zoom-in;
+      position: relative;
+    }
+
+    .tap-zoom-badge {
+      display: none;
+    }
+
+    /* FULLSCREEN ZOOM LIGHTBOX MODAL */
+    .zoom-modal-overlay.open {
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.92);
+      z-index: 3000;
+      padding: 14px;
+      animation: fadeIn 0.15s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .zoom-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffffff;
+      padding: 6px 4px 12px 4px;
+      flex-shrink: 0;
+    }
+
+    .zoom-modal-header span {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+    }
+
+    .zoom-modal-body {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .zoom-modal-body img {
+      width: 680px;
+      max-width: none;
+      height: auto;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      margin: 0 auto;
+    }
+
+    .zoom-modal-footer {
+      display: flex;
+      gap: 10px;
+      padding-top: 12px;
+      flex-shrink: 0;
+    }
+
+    .zoom-modal-footer .btn {
+      flex: 1;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    /* MOBILE RESPONSIVE OPTIMIZATION (NO-SCROLL SINGLE SCREEN) */
     @media (max-width: 768px) {
+      html, body {
+        height: 100dvh;
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+      }
+
       body {
-        padding: 12px 12px 92px 12px;
+        display: flex;
+        flex-direction: column;
       }
 
       .app-header {
-        padding: 14px 16px;
-        margin-bottom: 14px;
-        border-radius: 12px;
+        padding: 8px 12px;
+        margin: 0;
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .brand-title {
+        gap: 8px;
+      }
+
+      #headerMiniLogo {
+        width: 30px !important;
+        height: 30px !important;
       }
 
       .brand-title h1 {
-        font-size: 1.05rem;
+        font-size: 0.95rem;
       }
 
-      .brand-title span {
-        font-size: 0.76rem;
-      }
-
-      /* Hide top desktop action buttons on mobile; use sticky bottom bar instead */
+      .brand-title span,
       .app-header .action-buttons {
         display: none;
       }
 
+      /* Mini Live Preview Bar at Top (Clickable to Zoom) */
+      .mobile-preview-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #0f172a;
+        color: #fff;
+        padding: 8px 12px;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      .mpb-left {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .mpb-title {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .mpb-summary {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #f8fafc;
+      }
+
+      .mpb-btn {
+        background: rgba(255,255,255,0.14);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: #fff;
+        padding: 6px 11px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Step Tabs so user switches sections without vertical scrolling */
+      .mobile-step-tabs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        background: #ffffff;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .m-step-tab {
+        padding: 10px 4px;
+        text-align: center;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        border-bottom: 2.5px solid transparent;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .m-step-tab.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+        background: #fef2f2;
+      }
+
+      .main-grid {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        width: 100%;
+        margin: 0;
+        gap: 0;
+      }
+
       .editor-panel {
-        padding: 16px 14px;
-        border-radius: 12px;
-        gap: 18px;
+        flex: 1;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 12px;
+        overflow-y: auto;
+        gap: 10px;
+      }
+
+      /* Only show the active tab section on mobile */
+      .editor-panel .section-box {
+        display: none;
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .editor-panel .section-box.m-active {
+        display: block;
+      }
+
+      .section-title {
+        font-size: 0.82rem;
+        margin-bottom: 8px;
       }
 
       .form-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
       }
 
-      /* Prevent iOS Safari auto-zoom on focus (requires >=16px) & bigger touch target */
+      label {
+        font-size: 0.74rem;
+      }
+
+      /* Prevent iOS auto-zoom (>=16px) while keeping compact height */
       input[type="text"],
       input[type="number"],
       input[type="date"],
-      input[type="datetime-local"],
       textarea,
       select {
         font-size: 16px;
-        padding: 10px 12px;
-        min-height: 44px;
+        padding: 7px 10px;
+        min-height: 38px;
+      }
+
+      textarea {
+        min-height: 48px;
+      }
+
+      .items-list {
+        gap: 8px;
+        margin-bottom: 8px;
+        max-height: calc(100dvh - 295px);
+        overflow-y: auto;
       }
 
       .item-card {
-        grid-template-columns: 75px 1fr auto;
-        gap: 10px;
-        padding: 12px;
+        grid-template-columns: 64px 1fr auto;
+        gap: 6px;
+        padding: 8px;
       }
 
       .item-card .form-group:nth-child(2) {
@@ -596,65 +803,101 @@
       }
 
       .preset-chip {
-        font-size: 0.8rem;
-        padding: 7px 12px;
+        font-size: 0.72rem;
+        padding: 5px 9px;
       }
 
       .sig-tabs {
-        flex-wrap: wrap;
+        gap: 4px;
+        margin-bottom: 8px;
       }
 
       .sig-tab {
-        flex: 1 1 45%;
-        padding: 9px 10px;
-        font-size: 0.82rem;
+        padding: 7px 6px;
+        font-size: 0.74rem;
+      }
+
+      #sigCanvas {
+        height: 75px;
+      }
+
+      /* Preview panel when "Preview" tab is selected */
+      .preview-panel {
+        display: none;
+        flex: 1;
+        overflow: hidden;
+        padding: 10px 12px;
+        justify-content: center;
+        align-items: center;
+        background: #e2e8f0;
+      }
+
+      .preview-panel.m-active {
+        display: flex;
       }
 
       .preview-toolbar {
-        font-size: 0.78rem;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 2px;
+        display: none;
+      }
+
+      .tap-zoom-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(15, 23, 42, 0.85);
+        color: #fff;
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 999px;
+        margin-top: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        cursor: pointer;
       }
 
       .mobile-bottom-bar {
         display: grid;
         grid-template-columns: auto 1fr 1fr;
         gap: 8px;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.96);
-        backdrop-filter: blur(8px);
+        background: #ffffff;
         border-top: 1px solid var(--border);
-        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.07);
+        padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        flex-shrink: 0;
         z-index: 1000;
       }
 
       .mobile-bottom-bar .btn {
         justify-content: center;
-        padding: 12px 10px;
-        font-size: 0.85rem;
-        border-radius: 10px;
+        padding: 10px 8px;
+        font-size: 0.82rem;
+        border-radius: 9px;
       }
     }
 
     /* Print Styles */
     @media print {
-      body {
+      html, body {
+        height: auto !important;
+        overflow: visible !important;
         background: #fff;
         padding: 0;
       }
       .app-header,
       .editor-panel,
       .preview-toolbar,
-      .mobile-bottom-bar {
+      .mobile-bottom-bar,
+      .mobile-step-tabs,
+      .mobile-preview-bar,
+      .tap-zoom-badge,
+      .zoom-modal-overlay {
         display: none !important;
       }
-      .main-grid {
-        display: block;
+      .main-grid,
+      .preview-panel {
+        display: block !important;
+        background: #fff !important;
+        padding: 0 !important;
       }
       .receipt-scale-container {
         height: auto !important;
@@ -688,12 +931,29 @@
     </div>
   </header>
 
+  <!-- MOBILE TOP QUICK PREVIEW BAR (TAP TO OPEN LARGE MODAL) -->
+  <div class="mobile-preview-bar" onclick="openZoomModal()">
+    <div class="mpb-left">
+      <span class="mpb-title" id="mpbTenant">Fidel (Kamar 01)</span>
+      <span class="mpb-summary">Total: Rp <span id="mpbTotal">1,500,000</span></span>
+    </div>
+    <span class="mpb-btn">🔍 Lihat Kwitansi Besar</span>
+  </div>
+
+  <!-- MOBILE STEP TABS (NO VERTICAL SCROLL NEEDED) -->
+  <nav class="mobile-step-tabs">
+    <div class="m-step-tab active" id="mTabTagihan" onclick="switchMobileTab('tagihan')">1. Tagihan</div>
+    <div class="m-step-tab" id="mTabKost" onclick="switchMobileTab('kost')">2. Info Kost</div>
+    <div class="m-step-tab" id="mTabTtd" onclick="switchMobileTab('ttd')">3. TTD</div>
+    <div class="m-step-tab" id="mTabPreview" onclick="switchMobileTab('preview')">4. Preview</div>
+  </nav>
+
   <main class="main-grid">
     <!-- LEFT: FORM INPUT MANUAL -->
-    <section class="editor-panel">
+    <section class="editor-panel" id="editorPanel">
 
       <!-- 1. Info Kost / Header -->
-      <div class="section-box">
+      <div class="section-box" id="secKost">
         <div class="section-title">
           <span>1. Informasi Kost & Logo</span>
         </div>
@@ -733,12 +993,12 @@
         </div>
       </div>
 
-      <!-- 2. Info Penyewa & Tanggal -->
-      <div class="section-box">
+      <!-- 2. Info Penyewa & Tanggal + 3. Daftar Item & Harga Manual (Default Active Tab on Mobile) -->
+      <div class="section-box m-active" id="secTagihan">
         <div class="section-title">
-          <span>2. Data Penyewa & Tanggal</span>
+          <span>Data Penyewa & Tanggal</span>
         </div>
-        <div class="form-grid">
+        <div class="form-grid" style="margin-bottom: 12px;">
           <div class="form-group">
             <label>Tanggal Kwitansi (Date)</label>
             <input type="date" id="inDatePicker" onchange="renderReceipt()">
@@ -748,13 +1008,10 @@
             <input type="text" id="inRecipient" value="Fidel (Kamar 01)" oninput="renderReceipt()" placeholder="Nama penghuni / No. Kamar">
           </div>
         </div>
-      </div>
 
-      <!-- 3. Daftar Item & Harga Manual -->
-      <div class="section-box">
         <div class="section-title">
-          <span>3. Rincian Tagihan & Harga (Manual)</span>
-          <button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.78rem;" onclick="addItem()">+ Tambah Baris</button>
+          <span>Rincian Tagihan & Harga</span>
+          <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.76rem;" onclick="addItem()">+ Tambah Baris</button>
         </div>
 
         <div id="itemsContainer" class="items-list"></div>
@@ -767,13 +1024,13 @@
             <button type="button" class="preset-chip" onclick="addPreset('Listrik / Token', 150000)">+ Listrik</button>
             <button type="button" class="preset-chip" onclick="addPreset('Laundry / Kebersihan', 100000)">+ Laundry</button>
             <button type="button" class="preset-chip" onclick="addPreset('Parkir Motor/Mobil', 50000)">+ Parkir</button>
-            <button type="button" class="preset-chip" onclick="addPreset('Tamabahan Orang / Sekamar Berdua', 300000)">+ Tambahan Orang</button>
+            <button type="button" class="preset-chip" onclick="addPreset('Tambahan Orang', 300000)">+ Tambahan Orang</button>
           </div>
         </div>
       </div>
 
       <!-- 4. Footer & Tanda Tangan -->
-      <div class="section-box">
+      <div class="section-box" id="secTtd">
         <div class="section-title">
           <span>4. Tanda Tangan & Catatan Kaki</span>
         </div>
@@ -819,13 +1076,13 @@
     </section>
 
     <!-- RIGHT: LIVE RECEIPT PREVIEW -->
-    <section class="preview-panel">
+    <section class="preview-panel" id="previewPanel">
       <div class="preview-toolbar">
-        <span><strong>Live Preview Kwitansi</strong> (Otomatis terupdate saat diketik)</span>
+        <span><strong>Live Preview Kwitansi</strong> (Klik kwitansi untuk perbesar)</span>
         <span>Format: e-Nota Standar</span>
       </div>
 
-      <div class="receipt-scale-container" id="receiptScaleContainer">
+      <div class="receipt-scale-container" id="receiptScaleContainer" onclick="openZoomModal()" title="Klik untuk memperbesar kwitansi">
       <div class="receipt-wrapper" id="receiptCapture">
         <!-- HEADER -->
         <div class="r-header">
@@ -901,8 +1158,27 @@
         </div>
       </div>
       </div>
+      <div class="tap-zoom-badge" onclick="openZoomModal()">🔍 Ketuk kwitansi untuk lihat ukuran besar</div>
     </section>
   </main>
+
+  <!-- FULLSCREEN ZOOM MODAL (KLIK UNTUK LIHAT BESARNYA) -->
+  <div class="zoom-modal-overlay" id="zoomModalOverlay">
+    <div class="zoom-modal-header">
+      <div>
+        <strong>Preview Ukuran Penuh</strong>
+        <span style="display:block;">Geser / cubit layar untuk melihat detail</span>
+      </div>
+      <button class="btn btn-outline" style="padding:6px 12px; font-size:0.8rem;" onclick="closeZoomModal()">✕ Tutup</button>
+    </div>
+    <div class="zoom-modal-body" onclick="closeZoomModal()">
+      <img id="zoomModalImg" src="" alt="Preview Besar Kwitansi" onclick="event.stopPropagation()" />
+    </div>
+    <div class="zoom-modal-footer">
+      <button class="btn btn-secondary" onclick="downloadPDF()">📄 Unduh PDF</button>
+      <button class="btn btn-primary" onclick="downloadPNG()">🖼️ Simpan Gambar</button>
+    </div>
+  </div>
 
   <!-- STICKY BOTTOM ACTION BAR FOR MOBILE -->
   <div class="mobile-bottom-bar">
@@ -1269,6 +1545,12 @@
       document.getElementById('rTotalAmount').textContent = formatNumber(totalAmount);
       document.getElementById('rPaymentAmount').textContent = formatNumber(totalAmount);
 
+      // Update Mobile Top Quick Preview Bar
+      const mpbTenant = document.getElementById('mpbTenant');
+      const mpbTotal = document.getElementById('mpbTotal');
+      if (mpbTenant) mpbTenant.textContent = document.getElementById('inRecipient').value || 'Penyewa Kost';
+      if (mpbTotal) mpbTotal.textContent = formatNumber(totalAmount);
+
       // 5. Footer & Signature
       document.getElementById('rEnotaTag').textContent = document.getElementById('inEnotaTag').value;
       document.getElementById('rReceivedByName').textContent = document.getElementById('inReceivedBy').value;
@@ -1291,28 +1573,82 @@
       fitReceiptToScreen();
     }
 
-    // --- AUTO-FIT RECEIPT PREVIEW ON MOBILE SCREEN ---
+    // --- MOBILE NO-SCROLL TAB NAVIGATION & ZOOM MODAL ---
+    let currentMobileTab = 'tagihan';
+
+    function switchMobileTab(tab) {
+      currentMobileTab = tab;
+      document.getElementById('mTabTagihan').classList.toggle('active', tab === 'tagihan');
+      document.getElementById('mTabKost').classList.toggle('active', tab === 'kost');
+      document.getElementById('mTabTtd').classList.toggle('active', tab === 'ttd');
+      document.getElementById('mTabPreview').classList.toggle('active', tab === 'preview');
+
+      const editorPanel = document.getElementById('editorPanel');
+      const previewPanel = document.getElementById('previewPanel');
+
+      if (tab === 'preview') {
+        editorPanel.style.display = 'none';
+        previewPanel.classList.add('m-active');
+        requestAnimationFrame(fitReceiptToScreen);
+      } else {
+        editorPanel.style.display = 'flex';
+        previewPanel.classList.remove('m-active');
+        document.getElementById('secTagihan').classList.toggle('m-active', tab === 'tagihan');
+        document.getElementById('secKost').classList.toggle('m-active', tab === 'kost');
+        document.getElementById('secTtd').classList.toggle('m-active', tab === 'ttd');
+      }
+    }
+
+    async function openZoomModal() {
+      const overlay = document.getElementById('zoomModalOverlay');
+      const img = document.getElementById('zoomModalImg');
+      const canvas = await captureReceiptCanvas();
+      img.src = canvas.toDataURL('image/png');
+      overlay.classList.add('open');
+    }
+
+    function closeZoomModal() {
+      document.getElementById('zoomModalOverlay').classList.remove('open');
+    }
+
+    // --- AUTO-FIT RECEIPT PREVIEW ON MOBILE SCREEN (BOTH WIDTH & HEIGHT SO NO SCROLL) ---
     function fitReceiptToScreen() {
       const container = document.getElementById('receiptScaleContainer');
       const receipt = document.getElementById('receiptCapture');
+      const previewPanel = document.getElementById('previewPanel');
       if (!container || !receipt) return;
 
-      const availableWidth = container.clientWidth;
-      const baseWidth = 680;
-
-      if (availableWidth < baseWidth) {
-        const scale = availableWidth / baseWidth;
-        receipt.style.transform = `scale(${scale})`;
-        container.style.height = `${Math.ceil(receipt.offsetHeight * scale)}px`;
-      } else {
+      const isMobile = window.innerWidth <= 768;
+      if (!isMobile) {
+        document.getElementById('editorPanel').style.display = 'flex';
         receipt.style.transform = 'none';
         container.style.height = 'auto';
+        return;
       }
+
+      const availableWidth = (previewPanel ? previewPanel.clientWidth - 24 : window.innerWidth - 24);
+      const availableHeight = (previewPanel ? previewPanel.clientHeight - 54 : window.innerHeight - 220);
+      const baseWidth = 680;
+      const baseHeight = receipt.offsetHeight || 460;
+
+      const scaleW = availableWidth / baseWidth;
+      const scaleH = availableHeight > 120 ? (availableHeight / baseHeight) : scaleW;
+      const scale = Math.min(scaleW, scaleH, 1);
+
+      receipt.style.transform = `scale(${scale})`;
+      container.style.height = `${Math.ceil(baseHeight * scale)}px`;
     }
 
     // --- EXPORT TO PNG & PDF (Full Resolution 680px even on Mobile) ---
     async function captureReceiptCanvas() {
       const el = document.getElementById('receiptCapture');
+      const previewPanel = document.getElementById('previewPanel');
+      const wasHidden = window.getComputedStyle(previewPanel).display === 'none';
+      if (wasHidden) {
+        previewPanel.style.display = 'flex';
+        previewPanel.style.position = 'fixed';
+        previewPanel.style.left = '-9999px';
+      }
       const prevTransform = el.style.transform;
       el.style.transform = 'none';
       const canvas = await html2canvas(el, {
@@ -1323,6 +1659,11 @@
         useCORS: true
       });
       el.style.transform = prevTransform;
+      if (wasHidden) {
+        previewPanel.style.display = '';
+        previewPanel.style.position = '';
+        previewPanel.style.left = '';
+      }
       return canvas;
     }
 
